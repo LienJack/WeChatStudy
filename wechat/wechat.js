@@ -1,6 +1,12 @@
 const Promise = require('bluebird')
 const request = Promise.promisify(require('request'))
 
+var prefix = 'https://api.weixin.qq.com/cgi-bin/token'
+var api = {
+  access_token: prefix + '?grant_type=client_credential',
+}
+
+
 function Wechat(opts) {
   let that = this
   this.appId = opts.appId
