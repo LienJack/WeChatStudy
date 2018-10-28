@@ -14,7 +14,7 @@ var api = {
 
 
 
-module.exports = function(opts) {
+module.exports = function(opts, handler) {
   const wechat = new Wechat(opts)
   return function *(next) {
     // console.log(this.query)
@@ -46,39 +46,10 @@ module.exports = function(opts) {
       let content = yield util.parseXMLAsync(data)
       // console.log(content)
       let message = util.formatMessage(content.xml)
-      console.log(message)
-      if(message.MsgType === 'event') {
-        if (message.Event === 'subscribe') {
-          let now = new Date().getTime()
-          that.status = 200
-          that.type = 'application/xml' 
-          that.body = `<xml> 
-            <ToUserName>< ![CDATA[${message.FromUserName}] ]></ToUserName> 
-            <FromUserName>< ![CDATA[${message.ToUserName}] ]></FromUserName> 
-            <CreateTime>${now}</CreateTime> 
-            <MsgType>< ![CDATA[text] ]></MsgType> 
-            <Content>< ![CDATA[你好,不欢迎你] ]></Content> 
-            </xml>`
-            return
-        }
-      }
-      if(message.MsgType === 'text') {
-        let now = new Date().getTime()
-        that.status = 200
-        that.type = 'application/xml' 
-        var reply =
-        '<xml>' + 
-          '<ToUserName>< ![CDATA[' + message.FromUserName +']]></ToUserName>' +
-          '<FromUserName>< ![CDATA['+ message.ToUserName +']]></FromUserName>' +
-          '<CreateTime>'+ now +'</CreateTime>'+ 
-          '<MsgType>< ![CDATA[text] ]></MsgType>' + 
-          '<Content>< ![CDATA[你好,不欢迎你] ]></Content>' +
-          '</xml>'
-          
-      }
-      console.log(reply)
-      that.body = reply
-      return
+      // console.log(message)
+      this.weixin = message
+      yield handler.call(this, next)
+      wechat.replay.call(this)
     }
    
   }
